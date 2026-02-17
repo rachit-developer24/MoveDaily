@@ -10,23 +10,23 @@ import SwiftUI
 struct MoveDailyMainTabView: View {
     @State var selectedTab = "Home"
     var body: some View {
-        TabView(selection: $selectedTab) {
-           HomeView()
-                .tag("Home")
-                .tabItem{
-                    Image(systemName: "house")
+            TabView(selection: $selectedTab) {
+                HomeView()
+                    .tag("Home")
+                    .tabItem{
+                        Image(systemName: "house")
                         Text("Home")
-                }
-            
-            PastDataView()
-                .tag("PastData")
-                .tabItem {
-                    Image(systemName: "chart.line.uptrend.xyaxis")
-                    Text("Charts")
-                }
+                    }
+                
+                PastDataView()
+                    .tag("PastData")
+                    .tabItem {
+                        Image(systemName: "chart.line.uptrend.xyaxis")
+                        Text("Charts")
+                    }
+            }
+            .tint(.green)
         }
-        .tint(.green)
-    }
 }
 
 #Preview {

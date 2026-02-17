@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct ActivityCard{
+struct ActivityCard:Identifiable{
     let id:String
     var steps:Int
     let title:String
