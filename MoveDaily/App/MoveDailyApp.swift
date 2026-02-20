@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct MoveDailyApp: App {
+    @State var homeViewModel = HomeViewModel(healthManager: HealthManager())
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(homeViewModel)
         }
     }
 }
+
