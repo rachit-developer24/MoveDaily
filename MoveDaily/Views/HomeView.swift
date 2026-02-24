@@ -12,7 +12,7 @@ struct HomeView: View {
     @State var active:Int = 34
     @State var stand:Int = 6
     @Environment(HomeViewModel.self) var homeViewModel
-    @State private var workoutViewModel = WorkoutViewModel()
+    @Environment(WorkoutViewModel.self) var workOutViewModel
     var griditem:[GridItem] = [
         .init(.flexible(),spacing: 1),
         .init(.flexible(),spacing: 1)
@@ -82,7 +82,19 @@ struct HomeView: View {
                         }
                     })
                     .padding(.horizontal)
-                   
+                    HStack{
+                        Text("This Week")
+                            .font(.title2)
+                        Spacer()
+                    }
+                    .padding(.horizontal)
+
+                    LazyVGrid(columns: griditem) {
+                        ForEach(homeViewModel.weeklyWorkoutData) { card in
+                            FitnessActivityCard(activityCard: card)
+                        }
+                    }
+                    .padding(.horizontal)
                         HStack{
                             Text("Recent Workouts")
                                 .font(.title2)
@@ -99,7 +111,7 @@ struct HomeView: View {
                         }
                         .padding(.horizontal)
                     LazyVStack{
-                        ForEach(workoutViewModel.workouts){ workout in  WorkoutCard(workout: workout)
+                        ForEach(workOutViewModel.workouts){ workout in  WorkoutCard(workout: workout)
                             
                         }
                     }
@@ -107,8 +119,8 @@ struct HomeView: View {
                 }
                 .task{
                     await homeViewModel.requestToAccess()
-                    await workoutViewModel.fetchWorkouts()
-                    await homeViewModel.fetchHealthData()
+                    await workOutViewModel.fetchWorkouts()
+                    await homeViewModel.fetchWeeklyWorkoutCards()
                     await homeViewModel.funcDashboard()
                    
                 }

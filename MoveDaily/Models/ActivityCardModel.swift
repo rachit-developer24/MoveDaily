@@ -10,7 +10,7 @@ import SwiftUI
 
 struct ActivityCard:Identifiable{
     let id:String
-    var steps:Int
+    var amount:Int
     let title:String
     let goal:Int
     let image:String

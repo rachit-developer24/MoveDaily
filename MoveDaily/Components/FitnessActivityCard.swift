@@ -24,7 +24,7 @@ struct FitnessActivityCard: View {
                 
             }
             .padding(.horizontal)
-            Text("\(activityCard.steps)")
+            Text("\(activityCard.amount)")
                 .font(.title)
             
         }.frame(width: 180, height: 150)
@@ -34,5 +34,5 @@ struct FitnessActivityCard: View {
 }
 
 #Preview {
-    FitnessActivityCard(activityCard: ActivityCard(id: "abc", steps: 1200, title: "Today steps", goal: 10000, image: "walking.man", color: .green))
+    FitnessActivityCard(activityCard: ActivityCard(id: "abc", amount: 1200, title: "Today steps", goal: 10000, image: "walking.man", color: .green))
 }
