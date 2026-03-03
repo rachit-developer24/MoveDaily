@@ -21,7 +21,10 @@ class WorkoutViewModel{
         do{
             self.workouts = try await service.fetchRecentWorkouts()
         }catch{
-            self.error = error
+            self.error = mapHealthKitError(error)
         }
     }
+    
+    
+    
 }

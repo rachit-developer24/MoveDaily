@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MoveDailyMainTabView: View {
     @State var selectedTab = "Home"
+    @Environment(HomeViewModel.self) var homeViewModel
     var body: some View {
             TabView(selection: $selectedTab) {
                 HomeView()
@@ -17,8 +18,7 @@ struct MoveDailyMainTabView: View {
                         Image(systemName: "house")
                         Text("Home")
                     }
-                
-                PastDataView()
+                WeeklyStepsChartView(data: homeViewModel.weeklySteps)
                     .tag("PastData")
                     .tabItem {
                         Image(systemName: "chart.line.uptrend.xyaxis")

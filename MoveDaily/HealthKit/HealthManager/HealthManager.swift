@@ -11,14 +11,44 @@ import HealthKit
 class HealthManager{
   let healthStore = HKHealthStore()
          func requestHealthkitAccess()async throws{
+             let basalCalories = HKQuantityType(.basalEnergyBurned)
              let calories = HKQuantityType(.activeEnergyBurned)
              let exercise = HKQuantityType(.appleExerciseTime)
              let stand = HKCategoryType(.appleStandHour)
              let steps = HKQuantityType(.stepCount)
              let workout = HKObjectType.workoutType()
-             let healthTypes: Set<HKObjectType> = [calories,exercise,stand,steps,workout]
+             let healthTypes: Set<HKObjectType> = [basalCalories,calories,exercise,stand,steps,workout]
              try await healthStore.requestAuthorization(toShare: [], read: healthTypes)
          }
+         
+    func fetchBasalCaloriesBurned()async throws ->Double{
+        let basal = HKQuantityType(.basalEnergyBurned)
+        let startDate = Calendar.current.startOfDay(for: Date())
+        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: Date())
+        return try await  withCheckedThrowingContinuation { Continuation in
+            let query = HKStatisticsQuery(quantityType: basal, quantitySamplePredicate: predicate,options: .cumulativeSum) { _, results, error in
+                if let nsError = error as NSError?,
+                    nsError.domain == "com.apple.healthkit",
+                    nsError.code == 11 {
+                    print("now in the 0 mode ")
+                        Continuation.resume(returning: 0)
+                        return
+                    }
+                if let error = error{
+                    Continuation.resume(throwing: error)
+                    return
+                }
+                
+                let kcal = results?.sumQuantity()?.doubleValue(for: .kilocalorie()) ?? 0
+                Continuation.resume(returning: kcal)
+                
+                }
+            self.healthStore.execute(query)
+            }
+        }
+    
+    
+    
          
          func fetchCaloriesBurned()async throws ->Double{
              let calories = HKQuantityType(.activeEnergyBurned)
@@ -265,6 +295,8 @@ extension HKWorkoutActivityType {
         default: return .purple
         }
     }
+    
+    
 }
 
 

@@ -9,8 +9,13 @@ import SwiftUI
 
 @main
 struct MoveDailyApp: App {
-    @State var homeViewModel = HomeViewModel(healthManager: HealthManager())
-    @State var workoutViewModel = WorkoutViewModel(service: HealthManager())
+    private let healthManager = HealthManager()
+    @State var homeViewModel: HomeViewModel
+    @State var workoutViewModel: WorkoutViewModel
+    init(){
+        self.homeViewModel = HomeViewModel(healthManager: healthManager)
+        self.workoutViewModel = WorkoutViewModel(service: healthManager)
+    }
     var body: some Scene {
         WindowGroup {
             ContentView()
