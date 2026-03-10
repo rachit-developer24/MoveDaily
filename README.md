@@ -15,8 +15,7 @@ Distributed via **Apple TestFlight**.
 
 <img width="645" height="1398" alt="IMG_9313" src="https://github.com/user-attachments/assets/0bc2d854-38c9-4f5c-b58b-fffc2ad463ae" />
 
-
-<img width="645" height="1398" alt="IMG_9315" src="https://github.com/user-attachments/assets/d746f980-259e-482a-9432-3847b8bc0d78" />
+<img width="645" height="1398" alt="IMG_9324" src="https://github.com/user-attachments/assets/3594f8df-b418-4254-9470-9bd06c1bea25" />
 
 
 <img width="645" height="1398" alt="IMG_9314" src="https://github.com/user-attachments/assets/30d15273-4dc4-4729-9dcd-932fe58cf360" />
