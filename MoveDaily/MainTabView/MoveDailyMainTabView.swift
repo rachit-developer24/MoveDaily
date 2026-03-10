@@ -18,7 +18,7 @@ struct MoveDailyMainTabView: View {
                         Image(systemName: "house")
                         Text("Home")
                     }
-                WeeklyStepsChartView(data: homeViewModel.weeklySteps)
+                ChartsHomeView()
                     .tag("PastData")
                     .tabItem {
                         Image(systemName: "chart.line.uptrend.xyaxis")

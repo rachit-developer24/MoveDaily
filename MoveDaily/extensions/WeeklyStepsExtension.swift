@@ -16,16 +16,16 @@ extension HealthManager {
         let calendar = Calendar.current
         let endDate = Date()
 
-        // Start of day 6 days ago => 7 days including today
+      
         let startDate = calendar.startOfDay(
             for: calendar.date(byAdding: .day, value: -6, to: endDate)!
         )
 
-        // Daily buckets
+      
         var interval = DateComponents()
         interval.day = 1
 
-        // Align buckets to midnight
+   
         let anchorDate = calendar.startOfDay(for: endDate)
 
         let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate)
@@ -81,7 +81,7 @@ extension HealthManager {
         }
     }
 
-    // MARK: - Helpers
+
 
     private static func dayID(_ date: Date) -> String {
         let f = DateFormatter()

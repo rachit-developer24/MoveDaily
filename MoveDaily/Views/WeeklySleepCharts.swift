@@ -1,14 +1,16 @@
 //
-//  PastDataView.swift
+//  WeeklySleepCharts.swift
 //  MoveDaily
 //
-//  Created by Rachit Sharma on 17/02/2026.
+//  Created by Rachit Sharma on 05/03/2026.
 //
+
+import SwiftUI
 import SwiftUI
 import Charts
 
-struct WeeklyStepsChartView: View {
-    let data: [DailySteps]
+struct WeeklySleepChartView: View {
+    let data: [DailySleep]
 
     private let dayFormatter: DateFormatter = {
         let f = DateFormatter()
@@ -17,25 +19,25 @@ struct WeeklyStepsChartView: View {
         return f
     }()
 
-    private var totalSteps: Int { data.map(\.steps).reduce(0, +) }
-
-    private var averageSteps: Int {
-        guard !data.isEmpty else { return 0 }
-        return totalSteps / data.count
+    private var hoursData: [(date: Date, hours: Double)] {
+        data.map { ($0.date, Double($0.minutes) / 60.0) }
     }
 
-    private var bestDay: DailySteps? {
-        data.max(by: { $0.steps < $1.steps })
+    private var totalHours: Double { hoursData.map(\.hours).reduce(0, +) }
+
+    private var averageHours: Double {
+        guard !hoursData.isEmpty else { return 0 }
+        return totalHours / Double(hoursData.count)
     }
 
-    private var maxSteps: Int { data.map(\.steps).max() ?? 0 }
+    private var maxHours: Double { max(8, hoursData.map(\.hours).max() ?? 8) }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Weekly Steps")
+                    Text("Weekly Sleep")
                         .font(.largeTitle.bold())
                     Text("Last 7 days")
                         .foregroundStyle(.secondary)
@@ -43,34 +45,24 @@ struct WeeklyStepsChartView: View {
                 .padding(.horizontal)
 
                 HStack(spacing: 12) {
-                    StatCard(title: "Total", value: "\(totalSteps)", subtitle: "steps", systemImage: "sum")
-                    StatCard(title: "Average", value: "\(averageSteps)", subtitle: "per day", systemImage: "chart.bar.fill")
+                    StatCard(title: "Total", value: String(format: "%.1f", totalHours), subtitle: "hours", systemImage: "sum")
+                    StatCard(title: "Average", value: String(format: "%.1f", averageHours), subtitle: "per night", systemImage: "bed.double.fill")
                 }
                 .padding(.horizontal)
 
-                if let bestDay {
-                    StatCard(
-                        title: "Best day",
-                        value: "\(bestDay.steps)",
-                        subtitle: dayFormatter.string(from: bestDay.date),
-                        systemImage: "star.fill"
-                    )
-                    .padding(.horizontal)
-                }
-
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Steps chart")
+                    Text("Sleep chart")
                         .font(.title3.weight(.semibold))
 
                     if data.isEmpty {
-                        Text("No steps data yet.")
+                        Text("No sleep data yet.")
                             .foregroundStyle(.secondary)
                             .padding(.vertical, 24)
                     } else {
-                        Chart(data) { item in
+                        Chart(hoursData, id: \.date) { item in
                             BarMark(
                                 x: .value("Day", item.date),
-                                y: .value("Steps", item.steps)
+                                y: .value("Hours", item.hours)
                             )
                             .cornerRadius(4)
                         }
@@ -83,8 +75,7 @@ struct WeeklyStepsChartView: View {
                                 }
                             }
                         }
-                        .chartYAxis { AxisMarks(position: .leading) }
-                        .chartYScale(domain: 0...max(maxSteps, 1000))
+                        .chartYScale(domain: 0...maxHours)
                         .frame(height: 220)
                     }
                 }
@@ -92,10 +83,11 @@ struct WeeklyStepsChartView: View {
                 .background(Color(.systemGray6))
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .padding(.horizontal)
-
-                Spacer(minLength: 8)
             }
             .padding(.top, 8)
         }
     }
+}
+#Preview {
+    WeeklySleepChartView(data:[DailySleep(id: "aa", date:Date(), minutes: 400)])
 }

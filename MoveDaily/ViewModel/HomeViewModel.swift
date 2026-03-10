@@ -13,11 +13,11 @@ import HealthKit
 @MainActor
 @Observable
 class HomeViewModel {
+
+    // Existing
     var weeklySteps: [DailySteps] = []
     var totalCalories: Int = 0
     var calories: Int = 0
-    var active: Int = 0
-    var stand: Int = 0
     var error: AppError?
 
     var isloading: Bool = false
@@ -25,14 +25,37 @@ class HomeViewModel {
 
     let healthManager: HealthManager
 
+    var weeklyWorkoutData: [ActivityCard] = []
+    var healthData: [ActivityCard] = []
+
+    // ✅ New (WHOOP-friendly)
+    var workoutMinutesToday: Int = 0
+    var sleepMinutesLastNight: Int = 0
+    var weeklySleep: [DailySleep] = []
+
     init(healthManager: HealthManager) {
         self.healthManager = healthManager
     }
 
-    var weeklyWorkoutData: [ActivityCard] = []
-    var healthData: [ActivityCard] = []
+    // MARK: - Sleep UI helpers
+    var sleepZone: SleepZone { SleepZone.from(minutes: sleepMinutesLastNight) }
 
+    var sleepTint: Color {
+        sleepMinutesLastNight > 0 ? sleepZone.color : .secondary
+    }
 
+    var sleepText: String {
+        guard sleepMinutesLastNight > 0 else { return "Unavailable" }
+        let h = sleepMinutesLastNight / 60
+        let m = sleepMinutesLastNight % 60
+        return "\(h)h \(m)m"
+    }
+
+    var sleepStatusText: String {
+        sleepMinutesLastNight > 0 ? sleepZone.title : "Not available"
+    }
+
+    // MARK: - Lifecycle
     func loadHome() async {
         isloading = true
         defer { isloading = false }
@@ -47,7 +70,6 @@ class HomeViewModel {
         await fetchAll()
     }
 
-
     func refreshHome() async {
         error = nil
         await fetchAll()
@@ -55,12 +77,27 @@ class HomeViewModel {
 
     private func fetchAll() async {
         async let weeklyStepsFunc: Void = fetchWeeklySteps()
+        async let weeklySleepFunc: Void = fetchWeeklySleep()
         async let dashBoardFunc: Void = funcDashboard()
         async let weeklyWorkOutCardsFunc: Void = fetchWeeklyWorkoutCards()
 
-        _ = await (weeklyStepsFunc, dashBoardFunc, weeklyWorkOutCardsFunc)
+        _ = await (weeklyStepsFunc, weeklySleepFunc, dashBoardFunc, weeklyWorkOutCardsFunc)
     }
 
+    // MARK: - Authorization
+    func requestToAccess() async {
+        do {
+            guard HKHealthStore.isHealthDataAvailable() else {
+                self.error = .healthDataNotAvailable
+                return
+            }
+            try await healthManager.requestHealthkitAccess()
+        } catch {
+            self.error = mapHealthKitError(error)
+        }
+    }
+
+    // MARK: - Weekly Steps
     func fetchWeeklySteps() async {
         do {
             weeklySteps = try await healthManager.fetchStepsLast7Days()
@@ -70,35 +107,33 @@ class HomeViewModel {
         }
     }
 
-    func requestToAccess() async {
+    // MARK: - Weekly Sleep
+    func fetchWeeklySleep() async {
         do {
-            guard HKHealthStore.isHealthDataAvailable() else {
-                print("no data")
-                return
-            }
-            try await healthManager.requestHealthkitAccess()
-            print("healthManager called")
+            weeklySleep = try await healthManager.fetchSleepLast7Days()
         } catch {
-            print("Debug: error \(error.localizedDescription)")
             self.error = mapHealthKitError(error)
+            weeklySleep = []
         }
     }
 
+    // MARK: - Dashboard
     func funcDashboard() async {
         do {
             async let activeCalories = healthManager.fetchCaloriesBurned()
             async let basalCalories = healthManager.fetchBasalCaloriesBurned()
-            async let activeMins = healthManager.fetchExerciseTime()
-            async let standHours = healthManager.fetchTodayStandHours()
+            async let workoutMins = healthManager.fetchWorkoutMinutesToday()
+            async let sleepMins = healthManager.fetchSleepMinutesLastNight()
             async let steps = healthManager.fetchStepCount()
 
-            let (activeCals, basalCals, activeInt, standInt, stepsInt) =
-                try await (activeCalories, basalCalories, activeMins, standHours, steps)
+            let (activeCals, basalCals, workoutInt, sleepInt, stepsInt) =
+                try await (activeCalories, basalCalories, workoutMins, sleepMins, steps)
 
             calories = Int(activeCals.rounded())
             totalCalories = Int((activeCals + basalCals).rounded())
-            active = activeInt
-            stand = standInt
+
+            workoutMinutesToday = workoutInt
+            sleepMinutesLastNight = sleepInt
 
             healthData = [
                 ActivityCard(
@@ -123,6 +158,7 @@ class HomeViewModel {
         }
     }
 
+    // MARK: - Weekly workout cards
     func fetchWeeklyWorkoutCards() async {
         do {
             let minsByType = try await healthManager.fetchWeeklyWorkoutMinutesByType()

@@ -31,7 +31,6 @@ struct HomeView: View {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 16) {
 
-
                         VStack(alignment: .leading, spacing: 6) {
                             Text(todayString)
                                 .font(.subheadline)
@@ -43,18 +42,21 @@ struct HomeView: View {
                         .padding(.horizontal)
                         .padding(.top, 8)
 
-                
+                        // ✅ Dashboard Card (Workout + Sleep instead of Exercise + Stand)
                         Card {
                             HStack(alignment: .center, spacing: 16) {
 
                                 VStack(alignment: .leading, spacing: 10) {
                                     MetricRow(title: "Total Calories", value: totalCaloriesText, tint: .red)
-
                                     MetricRow(title: "Active Calories", value: "\(homeViewModel.calories) kcal", tint: .pink)
 
-                                    MetricRow(title: "Exercise", value: "\(homeViewModel.active) min", tint: .green)
+                                    MetricRow(title: "Workout", value: "\(homeViewModel.workoutMinutesToday) min", tint: .green)
 
-                                    MetricRow(title: "Stand", value: "\(homeViewModel.stand) hr", tint: .blue)
+                                    MetricRow(
+                                        title: "Sleep",
+                                        value: "\(homeViewModel.sleepText) • \(homeViewModel.sleepStatusText)",
+                                        tint: homeViewModel.sleepTint
+                                    )
 
                                     if homeViewModel.totalCalories == 0 {
                                         Text("Total calories depend on Resting Energy data in Apple Health.")
@@ -68,9 +70,11 @@ struct HomeView: View {
 
                                 ZStack {
                                     ProgressCircleView(progress: homeViewModel.calories, goal: 600, color: .red)
-                                    ProgressCircleView(progress: homeViewModel.active, goal: 60, color: .green)
+
+                                    ProgressCircleView(progress: homeViewModel.workoutMinutesToday, goal: 60, color: .green)
                                         .padding(18)
-                                    ProgressCircleView(progress: homeViewModel.stand, goal: 12, color: .blue)
+
+                                    ProgressCircleView(progress: homeViewModel.sleepMinutesLastNight, goal: 480, color: homeViewModel.sleepTint)
                                         .padding(36)
                                 }
                                 .frame(width: 140, height: 140)
@@ -78,7 +82,6 @@ struct HomeView: View {
                         }
                         .padding(.horizontal)
 
-      
                         SectionHeader(title: "Fitness Activity")
                             .padding(.horizontal)
 
@@ -89,7 +92,6 @@ struct HomeView: View {
                         }
                         .padding(.horizontal)
 
-        
                         SectionHeader(title: "This Week")
                             .padding(.horizontal)
 
@@ -100,12 +102,10 @@ struct HomeView: View {
                         }
                         .padding(.horizontal)
 
-
                         HStack {
                             SectionHeader(title: "Recent Workouts")
                             Spacer()
 
-                            // keep your NavigationLink when you build the full list screen
                             NavigationLink {
                                 EmptyView()
                             } label: {
@@ -125,7 +125,6 @@ struct HomeView: View {
                                 VStack(spacing: 12) {
                                     ForEach(workOutViewModel.workouts) { workout in
                                         WorkoutCard(workout: workout)
-
                                         if workout.id != workOutViewModel.workouts.last?.id {
                                             Divider()
                                         }
@@ -139,13 +138,12 @@ struct HomeView: View {
                     }
                     .padding(.bottom, 16)
                 }
-                if let error = homeViewModel.error {
 
-                    Color.black.opacity(0.3)
-                        .ignoresSafeArea()
+                // Error overlay
+                if let error = homeViewModel.error {
+                    Color.black.opacity(0.3).ignoresSafeArea()
 
                     VStack(spacing: 16) {
-
                         Text("Something went wrong")
                             .font(.headline)
 
@@ -154,9 +152,7 @@ struct HomeView: View {
                             .foregroundStyle(.secondary)
 
                         Button("Try Again") {
-                            Task {
-                                await homeViewModel.loadHome()
-                            }
+                            Task { await homeViewModel.loadHome() }
                         }
                         .buttonStyle(.borderedProminent)
 
@@ -174,7 +170,7 @@ struct HomeView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                 }
 
-
+                // Loading overlay
                 if homeViewModel.isloading {
                     Color.black.opacity(0.08).ignoresSafeArea()
                     HomeLoadingView()
@@ -197,7 +193,6 @@ struct HomeView: View {
         homeViewModel.totalCalories > 0 ? "\(homeViewModel.totalCalories) kcal" : "Unavailable"
     }
 }
-
 
 
 
