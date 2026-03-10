@@ -1,5 +1,5 @@
 
-# MoveDaily 🏃‍♂️
+# MoveDaily Health Tracker 🏃‍♂️
 
 **MoveDaily** is a SwiftUI fitness tracking app powered by **Apple HealthKit** that visualizes daily activity and weekly health trends including **steps, sleep, and workout minutes**.
 
@@ -11,8 +11,14 @@ Distributed via **Apple TestFlight**.
 
 # Screenshots
 <img width="645" height="1398" alt="IMG_9312" src="https://github.com/user-attachments/assets/686125ec-fa9e-4233-bd08-7479b33e6651" />
+
+
 <img width="645" height="1398" alt="IMG_9313" src="https://github.com/user-attachments/assets/0bc2d854-38c9-4f5c-b58b-fffc2ad463ae" />
+
+
 <img width="645" height="1398" alt="IMG_9315" src="https://github.com/user-attachments/assets/d746f980-259e-482a-9432-3847b8bc0d78" />
+
+
 <img width="645" height="1398" alt="IMG_9314" src="https://github.com/user-attachments/assets/30d15273-4dc4-4729-9dcd-932fe58cf360" />
 
 
