@@ -1,148 +1,251 @@
-Here you go — copy everything below:
+
+# MoveDaily Health Tracker 🏃‍♂️
+
+**MoveDaily** is a SwiftUI fitness tracking app powered by **Apple HealthKit** that visualizes daily activity and weekly health trends including **steps, sleep, and workout minutes**.
+
+The app focuses on **clean architecture, modern Swift concurrency, and production-style UI** while working with real Apple Health data.
+
+Distributed via **Apple TestFlight**.
 
 ---
 
-# MoveDaily 🏃
-
-A production-style iOS fitness tracking app built with SwiftUI and HealthKit, displaying daily activity rings, step count, calories, exercise minutes, stand hours, and weekly workout breakdowns — all powered by real Apple Health data.
-
----
-
-## Screenshots
-
-<img width="832" height="843" alt="Screenshot 2026-02-19 at 02 57 42" src="https://github.com/user-attachments/assets/c14c8d4c-5c60-4405-a765-6ffa981af619" />
-<img width="731" height="872" alt="Screenshot 2026-02-19 at 02 18 08" src="https://github.com/user-attachments/assets/4c59ea38-d0b1-4b79-9c09-a9e509d901b1" />
-<img width="708" height="860" alt="Screenshot 2026-02-19 at 02 16 44" src="https://github.com/user-attachments/assets/790a73b1-628c-46dd-a45a-8c6cf6d3cd33" />
+# Screenshots
+<img width="645" height="1398" alt="IMG_9312" src="https://github.com/user-attachments/assets/686125ec-fa9e-4233-bd08-7479b33e6651" />
 
 
----
+<img width="645" height="1398" alt="IMG_9313" src="https://github.com/user-attachments/assets/0bc2d854-38c9-4f5c-b58b-fffc2ad463ae" />
 
-## Features
 
-- 🔴🟢🔵 **Activity rings** — animated tri-ring progress view mirroring Apple's Activity app
-- 👟 **Step count** — daily steps fetched live from HealthKit
-- 🔥 **Calories burned** — active energy from HealthKit
-- ⏱️ **Exercise minutes** — Apple exercise time metric
-- 🧍 **Stand hours** — stand hour count for the day
-- 💪 **Weekly workout breakdown** — minutes per workout type (running, cycling, strength, soccer) from `HKWorkout`
-- 📋 **Recent workouts list** — scrollable workout history with duration and calories
-- ✅ **Graceful no-data handling** — HealthKit error code 11 handled across all queries, no crashes on fresh devices
+<img width="645" height="1398" alt="IMG_9315" src="https://github.com/user-attachments/assets/d746f980-259e-482a-9432-3847b8bc0d78" />
+
+
+<img width="645" height="1398" alt="IMG_9314" src="https://github.com/user-attachments/assets/30d15273-4dc4-4729-9dcd-932fe58cf360" />
+
 
 ---
 
-## Architecture
+# Features
+
+### Health Tracking
+
+* 👟 **Step count** — daily steps fetched from HealthKit
+* 😴 **Sleep tracking** — total sleep duration with weekly chart
+* 💪 **Workout minutes** — exercise duration with weekly breakdown
+* 📊 **7-day charts** — visual trends for steps, sleep and workouts
+
+### Dashboard UI
+
+* 🧩 **Modular activity cards**
+* 🔄 **Pull-to-refresh dashboard**
+* ⏳ **Loading states**
+* ⚠️ **Error overlay with retry**
+* 📭 **Empty states when Health data is unavailable**
+
+### Workouts
+
+* 📋 **Recent workout history**
+* 🏃 **Workout type detection**
+* ⏱️ **Workout duration**
+* 🔥 **Calories burned per workout**
+
+### HealthKit Reliability
+
+* Handles **HealthKit error code 11** when data is unavailable
+* Safe defaults prevent crashes on new devices
+
+---
+
+# Architecture
 
 ```
-MoveDaily/
-├── Models/
-│   ├── ActivityCard.swift
+MoveDaily
+├── App
+│   └── MoveDailyApp.swift
+│
+├── HealthKit
+│   └── HealthManager.swift
+│
+├── Models
+│   ├── ActivityCardModel.swift
+│   ├── DailyStepsModel.swift
+│   ├── DailySleep.swift
 │   └── WorkoutModel.swift
-├── Services/
-│   └── HealthManager.swift        # All HealthKit queries
-├── ViewModels/
-│   ├── HomeViewModel.swift        # @Observable, parallel fetching
+│
+├── ViewModel
+│   ├── HomeViewModel.swift
 │   └── WorkoutViewModel.swift
-├── Views/
+│
+├── Views
 │   ├── HomeView.swift
-│   ├── ProgressCircleView.swift   # Animated ring component
+│   ├── ChartsHomeView.swift
+│   ├── ContentView.swift
+│   └── LoadingHomeView.swift
+│
+├── Components
 │   ├── FitnessActivityCard.swift
-│   ├── WorkoutCard.swift
-│   └── MoveDailyMainTabView.swift
-└── App/
-    └── MoveDailyApp.swift
+│   └── ProgressCircleView.swift
+│
+├── SubViews
+│   ├── Cards
+│   ├── MetricRowView
+│   └── SectionHeader
+│
+├── Enums
+│   └── SleepZone.swift
+│
+└── Errors
+    └── AppError.swift
 ```
-
-**Pattern:** MVVM · `@Observable` · `async/await` · `async let` parallel fetching
 
 ---
 
-## Technical Highlights
+# Architecture Pattern
 
-### Parallel HealthKit Fetching
-```swift
-async let calories = healthManager.fetchCaloriesBurned()
-async let active   = healthManager.fetchExerciseTime()
-async let stand    = healthManager.fetchTodayStandHours()
-async let steps    = healthManager.fetchStepCount()
+**MVVM + Dependency Injection**
 
-let (cals, activeInt, standInt, stepsInt) = try await (calories, active, stand, steps)
+* Services injected into ViewModels
+* ViewModels expose observable state to SwiftUI views
+* HealthKit logic isolated inside a dedicated service
+
 ```
-All four metrics fetch simultaneously — no sequential waiting.
+View → ViewModel → HealthManager → HealthKit
+```
 
-### Callback → async/await Bridge
+---
+
+# Technical Highlights
+
+## Parallel HealthKit Queries
+
+Health metrics load **simultaneously** using Swift concurrency.
+
+```swift
+async let steps = healthManager.fetchSteps()
+async let sleep = healthManager.fetchSleep()
+async let workouts = healthManager.fetchWorkoutMinutes()
+
+let (stepsData, sleepData, workoutData) =
+try await (steps, sleep, workouts)
+```
+
+This avoids sequential loading delays.
+
+---
+
+# Callback → async/await Bridge
+
+HealthKit uses callback APIs which are bridged into modern Swift concurrency.
+
 ```swift
 return try await withCheckedThrowingContinuation { continuation in
-    let query = HKStatisticsQuery(...)  { _, results, error in
-        if let error { continuation.resume(throwing: error); return }
-        continuation.resume(returning: results?.sumQuantity()?.doubleValue(for: .kilocalorie()) ?? 0)
+
+    let query = HKStatisticsQuery(...) { _, result, error in
+
+        if let error {
+            continuation.resume(throwing: error)
+            return
+        }
+
+        let value = result?.sumQuantity()?.doubleValue(for: .count()) ?? 0
+        continuation.resume(returning: value)
     }
+
     healthStore.execute(query)
 }
 ```
-All HKQuery callbacks are cleanly wrapped in `withCheckedThrowingContinuation`.
 
-### HealthKit Error Code 11 Handling
+---
+
+# HealthKit Error Handling
+
+HealthKit returns error code **11** when no data exists.
+
 ```swift
 if let nsError = error as NSError?,
    nsError.domain == "com.apple.healthkit",
    nsError.code == 11 {
-    continuation.resume(returning: 0) // No data available — safe default
+
+    continuation.resume(returning: 0)
     return
 }
 ```
-Prevents crashes on simulators and devices with no health data.
+
+This ensures the app **never crashes on new devices**.
 
 ---
 
-## HealthKit Permissions
+# Tech Stack
 
-The app requests read-only access to:
-
-| Metric | HKType |
-|--------|--------|
-| Active calories | `HKQuantityType(.activeEnergyBurned)` |
-| Exercise time | `HKQuantityType(.appleExerciseTime)` |
-| Stand hours | `HKCategoryType(.appleStandHour)` |
-| Step count | `HKQuantityType(.stepCount)` |
-| Workouts | `HKObjectType.workoutType()` |
-
----
-
-## Tech Stack
-
-| | |
-|---|---|
-| **Language** | Swift 5.9 |
-| **UI** | SwiftUI |
-| **Architecture** | MVVM |
-| **Health Data** | HealthKit |
-| **State** | `@Observable` |
-| **Concurrency** | async/await · async let |
+|              |               |
+| ------------ | ------------- |
+| Language     | Swift 5.9     |
+| UI           | SwiftUI       |
+| Architecture | MVVM          |
+| Health Data  | HealthKit     |
+| Charts       | Swift Charts  |
+| State        | `@Observable` |
+| Concurrency  | async/await   |
 
 ---
 
-## Getting Started
+# CI / Distribution
+
+The app is distributed via:
+
+**Apple TestFlight**
+
+Production builds are uploaded through **Xcode → Archive → App Store Connect**.
+
+---
+
+# Getting Started
+
+Clone the project:
 
 ```bash
 git clone https://github.com/rachit-developer24/MoveDaily.git
 ```
 
-Open in Xcode and run on a **real device** — HealthKit is not fully supported on simulator.
+Run on a **real iPhone** because HealthKit is not fully supported on the simulator.
 
-> Make sure to add `NSHealthShareUsageDescription` to your Info.plist before running.
+Add these permissions in **Info.plist**
 
----
-
-## Roadmap
-
-- [ ] App Store release
-- [ ] Charts view with weekly/monthly history
-- [ ] Step count goal customisation
-- [ ] Widget support
+```
+NSHealthShareUsageDescription
+NSHealthUpdateUsageDescription
+```
 
 ---
 
-## Author
+# Roadmap
 
-**Rachit Matolia** — Junior iOS Developer, London
-[GitHub](https://github.com/rachit-developer24) · [LinkedIn](https://linkedin.com/in/rachit-matolia-085b3b261)
+* Widgets
+* Monthly charts
+* Step goals
+* Dark mode improvements
+* App Store release
+
+---
+
+# Author
+
+**Rachit Matolia**
+Junior iOS Developer — London
+
+GitHub
+[https://github.com/rachit-developer24](https://github.com/rachit-developer24)
+
+LinkedIn
+[https://linkedin.com/in/rachit-matolia-085b3b261](https://linkedin.com/in/rachit-matolia-085b3b261)
+
+---
+
+# Portfolio
+
+Other projects
+
+• **CoinTracker** — Crypto price tracker with API pagination
+• **Instagram Clone** — Firebase powered social media app
+
+---
+
