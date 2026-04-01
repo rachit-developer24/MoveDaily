@@ -8,6 +8,8 @@
 import Foundation
 import HealthKit
 
+
+
 enum AppError: LocalizedError, Equatable {
     case healthDataNotAvailable
     case notAuthorized

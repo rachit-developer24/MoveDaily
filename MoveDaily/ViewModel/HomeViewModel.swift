@@ -23,7 +23,7 @@ class HomeViewModel {
     var isloading: Bool = false
     private var hasRequestedAccess: Bool = false
 
-    let healthManager: HealthManager
+    let healthManager: HealthManagerProtocol
 
     var weeklyWorkoutData: [ActivityCard] = []
     var healthData: [ActivityCard] = []
@@ -33,7 +33,7 @@ class HomeViewModel {
     var sleepMinutesLastNight: Int = 0
     var weeklySleep: [DailySleep] = []
 
-    init(healthManager: HealthManager) {
+    init(healthManager: HealthManagerProtocol) {
         self.healthManager = healthManager
     }
 

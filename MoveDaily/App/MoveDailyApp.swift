@@ -10,10 +10,11 @@ import SwiftUI
 @main
 struct MoveDailyApp: App {
     private let healthManager = HealthManager()
+    private let mockHealthManager = MockHealthManager()
     @State var homeViewModel: HomeViewModel
     @State var workoutViewModel: WorkoutViewModel
     init(){
-        self.homeViewModel = HomeViewModel(healthManager: healthManager)
+        self.homeViewModel = HomeViewModel(healthManager:healthManager)
         self.workoutViewModel = WorkoutViewModel(service: healthManager)
     }
     var body: some Scene {

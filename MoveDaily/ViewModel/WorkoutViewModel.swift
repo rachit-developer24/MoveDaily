@@ -9,8 +9,8 @@ import Foundation
 @Observable
 class WorkoutViewModel{
     var error:Error?
-    let service:HealthManager
-    init(service:HealthManager){
+    let service:HealthManagerProtocol
+    init(service:HealthManagerProtocol){
         self.service = service
     }
     
@@ -19,7 +19,7 @@ class WorkoutViewModel{
     
     func fetchWorkouts()async{
         do{
-            self.workouts = try await service.fetchRecentWorkouts()
+            self.workouts = try await service.fetchRecentWorkouts(limit: 10)
         }catch{
             self.error = mapHealthKitError(error)
         }
